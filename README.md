@@ -7,6 +7,7 @@
 3. pip install autopy
 4. pip install mouse
 5. pip install mediapipe
+6. pip install pynput
 
 >How to use
 1. Download this github file
