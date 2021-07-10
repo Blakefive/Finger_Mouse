@@ -1,6 +1,5 @@
 import cv2
 import mediapipe as mp
-import time
 import math
 
 class handDetector():
@@ -16,6 +15,7 @@ class handDetector():
         self.mpDraw = mp.solutions.drawing_utils
         self.tipIds = [4, 8, 12, 16, 20]
         self.inclination_data = 0
+        self.h_cut = 0
 
     def findHands(self, img, draw=True):
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -24,8 +24,7 @@ class handDetector():
         if self.results.multi_hand_landmarks:
             for handLms in self.results.multi_hand_landmarks:
                 if draw:
-                    self.mpDraw.draw_landmarks(img, handLms,
-                                               self.mpHands.HAND_CONNECTIONS)
+                    self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
         return img
 
     def findPosition(self, img, handNo=0, draw=True):
@@ -47,8 +46,11 @@ class handDetector():
             xmin, xmax = min(xList), max(xList)
             ymin, ymax = min(yList), max(yList)
             bbox = xmin, ymin, xmax, ymax
+            #self.h_cut = abs(bbox[3] - bbox[1]) if abs(self.h_cut-abs(bbox[3] - bbox[1])) > 100 else self.h_cut
 
             if draw:
+                print("bbox, h_cut", bbox, self.h_cut)
+                cv2.line(img, (1, h - self.h_cut), (w-1,h - self.h_cut), (255,0,0), 3)
                 cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
 
         return self.lmList, bbox
@@ -77,10 +79,12 @@ class handDetector():
                     fingers = 3 if fingers >= 2 else 0
                 if id == 4:
                     fingers = 4 if fingers >= 3 else 0
+                    if fingers == 4:
+                        self.distense(self.tipIds[2], self.tipIds[3])
         if fingers < 2 and (self.lmList[self.tipIds[1]][2] < self.lmList[self.tipIds[1] - 1][2]):
             if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 1][1]:
                 fingers = 21
-                self.distense(self. tipIds[0], self.tipIds[1])
+                self.distense(self.tipIds[0], self.tipIds[1])
         elif fingers == 2:
             if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 2][1]:
                 fingers = 31
