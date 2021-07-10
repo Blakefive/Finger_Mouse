@@ -13,3 +13,5 @@
 1. Download this github file
 2. Open HotKey.py
 3. Run HotKey.py
+4. Click ctrl + alt (Start program)
+5. Reclick ctrl + alt (End program)
