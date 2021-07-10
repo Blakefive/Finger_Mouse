@@ -10,5 +10,5 @@
 
 >How to use
 1. Download this github file
-2. Open hotkey.py
-3. Run hotkey.py
+2. Open HotKey.py
+3. Run HotKey.py
