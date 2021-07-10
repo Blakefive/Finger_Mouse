@@ -47,7 +47,6 @@ def while_module():
             fingers = detector.fingersUp()
             cv2.rectangle(img, (frameR, 100), (wCam - frameR, hCam - detector.h_cut),
                           (255, 0, 255), 2)
-            print(fingers)
             if fingers == 21:
                 if agg_finger == 1:
                     mouse.click("left")
@@ -67,7 +66,6 @@ def while_module():
                 if detector.length < 50:
                     if agg_finger == 2:
                         mouse.click("right")
-                        print(click_z, z1)
                         mouse_click_check = 1
                 cv2.circle(img, (xlist[0], ylist[0]), 15, (255, 0, 255), cv2.FILLED)
                 cv2.circle(img, (xlist[1], ylist[1]), 15, (255, 0, 255), cv2.FILLED)
@@ -89,10 +87,7 @@ def while_module():
                 y3 = np.interp(ylist[0], (100, hCam - detector.h_cut), (0, hScr))
                 clocX = plocX + (x3 - plocX) / smoothening
                 clocY = plocY + (y3 - plocY) / smoothening
-                print("test", ylist[0], hScr, hCam)
 
-                print("xlist[0], ylist[0]", xlist[0], ylist[0], bbox[3])
-                print(wScr-clocX, clocY, z1, click_z, mouse_click_check)
                 if agg_x != (wScr-clocX) and agg_y != clocY:
                     try:
                         autopy.mouse.move(wScr - clocX, clocY)
@@ -111,7 +106,6 @@ def while_module():
                 cyay = -0.19 if bbox[1] - 20 >= clocY else 0.19 if bbox[3] + 20 <= clocY else (clocY - agg_y)
                 if cyay != 0 and detector.length > 50:
                     try:
-                        print(clocY, agg_y, cyay / 20, detector.length)
                         #mouse.wheel(clocY/100)
                         time_list[3] = (time.gmtime(time.time()).tm_sec - time_list[2] ) * 1.5
                     except:
@@ -122,8 +116,6 @@ def while_module():
                     time_list[1] = time.gmtime(time.time()).tm_sec
                 if time_list[3] > 0 and (time.gmtime(time.time()).tm_sec - time_list[1] == 1):
                     # mouse.wheel(clocY / 100)
-                    print("Wheel check", cyay, time_list[3])
-                    print("Wheel", cyay * time_list[3])
                     mouse.wheel((cyay * time_list[3]) / 400)
                     time_list[3] -= 1
                 else:
@@ -158,17 +150,13 @@ def while_module():
                     if finger_move == 0:
                         if (clocX - agg_x > 10 and detector.length < 50):
                             keyboard.press_and_release('ctrl + win + right')
-                            print("<", clocX, agg_x)
                             time_list[4] = 0
                         elif (clocX - agg_x < -10 and detector.length < 50):
                             keyboard.press_and_release('ctrl + win + left')
-                            print(">", clocX, agg_x)
                             time_list[4] = 0
                         finger_move = 1
                 elif detector.length < 50:
                     time_list[4] = 1
-                print(time_list[4])
-                print("check", clocX - agg_x)
                 for id, i in enumerate(xlist):
                     if id < 4:
                         cv2.circle(img, (i, ylist[id]), 15, (255, 0, 255), cv2.FILLED)
