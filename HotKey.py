@@ -15,6 +15,7 @@ def program_run():
     global agg_time, loop_check
     while loop_check == 1:
         img = main.while_module()
+        cv2.namedWindow('Image')
         cv2.imshow("Image", img)
         if cv2.waitKey(1) == 27:
             pass
