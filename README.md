@@ -1,7 +1,11 @@
 # Finger_Mouse
 # This is mouse to be able to be controled your fingers
 
->Install
+>Version
+1. python 3.7.2
+2. pip 21.1.3
+
+>LibraryInstall
 1. pip install opencv-python
 2. pip install keyboard
 3. pip install autopy
