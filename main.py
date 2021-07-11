@@ -169,7 +169,7 @@ def while_module():
             click_z, click_z2 = z1, z2
         img = cv2.flip(img, 1)
         cTime = time.time()
-        fps = 1 / (cTime - time_list[0] )
+        fps = 1 / (cTime - time_list[0]) if (cTime - time_list[0]) != 0 else 1
         time_list[0] = cTime
         cv2.putText(img, str(int(fps)), (20, 50), cv2.FONT_HERSHEY_PLAIN, 3,
                     (255, 0, 0), 3)
