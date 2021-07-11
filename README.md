@@ -1,5 +1,5 @@
 # Finger_Mouse
-# This is mouse to be able to be controled your fingers
+# This is mouse pointer to be able to be controled your fingers
 
 >Version
 1. python 3.7.2
