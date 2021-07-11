@@ -182,4 +182,4 @@ def h_cut_setting():
 
 def opencv_all_delete():
     print("delete")
-    cv2.destroyAllWindows()
+    cv2.destroyWindow('Image')
