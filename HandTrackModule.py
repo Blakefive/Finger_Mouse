@@ -9,7 +9,7 @@ class handDetector():
         self.detectionCon = detectionCon
         self.trackCon = trackCon
 
-        self.mpHands = mp.solutions.hands
+        self.mpHands = mp. solutions.hands
         self.hands = self.mpHands.Hands(self.mode, self.maxHands,
                                         self.detectionCon, self.trackCon)
         self.mpDraw = mp.solutions.drawing_utils
@@ -46,10 +46,8 @@ class handDetector():
             xmin, xmax = min(xList), max(xList)
             ymin, ymax = min(yList), max(yList)
             bbox = xmin, ymin, xmax, ymax
-            #self.h_cut = abs(bbox[3] - bbox[1]) if abs(self.h_cut-abs(bbox[3] - bbox[1])) > 100 else self.h_cut
 
             if draw:
-                print("bbox, h_cut", bbox, self.h_cut)
                 cv2.line(img, (1, h - self.h_cut), (w-1,h - self.h_cut), (255,0,0), 3)
                 cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
 
@@ -69,7 +67,7 @@ class handDetector():
     def fingersUp(self):
         fingers = 0
         for id in range(1, 5):
-            if (self.lmList[self.tipIds[id]][2] < self.lmList[self.tipIds[id] - 1][2]):
+            if (self.lmList[self.tipIds[id]][2] < self.lmList[self.tipIds[id] - 3][2]):
                 if id == 1:
                     fingers = 1
                 if id == 2:
@@ -80,16 +78,19 @@ class handDetector():
                 if id == 4:
                     fingers = 4 if fingers >= 3 else 0
                     if fingers == 4:
-                        self.distense(self.tipIds[2], self.tipIds[3])
-        if fingers < 2 and (self.lmList[self.tipIds[1]][2] < self.lmList[self.tipIds[1] - 1][2]):
+                        self.alllength = 0
+                        for i in range(1,4):
+                            self.distense(self.tipIds[i], self.tipIds[i+1])
+                            self.alllength += self.length
+        if fingers < 2 and (self.lmList[self.tipIds[1]][2] < self.lmList[self.tipIds[1] - 3][2]):
             if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 1][1]:
                 fingers = 21
                 self.distense(self.tipIds[0], self.tipIds[1])
         elif fingers == 2:
-            if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 2][1]:
+            if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 1][1]:
                 fingers = 31
         elif fingers == 4:
-            if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 2][1]:
+            if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 1][1]:
                 fingers = 51
         elif self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 2][1]:
             fingers = 5

@@ -2,10 +2,12 @@ from pynput.keyboard import Listener, Key, KeyCode
 from threading import Thread
 import main
 import cv2
+import sys
 
 store = set()
-check1 = set([Key.ctrl_l, Key.alt_l])
-check2 = set([Key.right, Key.pause])
+check1 = set([Key.ctrl_l, Key.alt_l, Key.cmd])
+check2 = set([Key.alt_l, KeyCode(char='`')])
+check3 = set([Key.ctrl_l, Key.shift_l, Key.alt_l])
 loop_check = 0
 agg_time = 0
 
@@ -22,23 +24,24 @@ def program_run():
 print("start")
 def handleKeyPress(key):
     global loop_check
-    if (key == Key.ctrl_l) or (key == Key.alt_l):
+    if (key == Key.ctrl_l) or (key == Key.alt_l) or (key == Key.cmd):
         store.add(key)
         if store == check1:
             if loop_check == 1:
-                print("check", loop_check)
                 loop_check = 0
                 program_run()
             elif loop_check == 0:
-                print("check1", loop_check)
                 loop_check = 1
                 t2 = Thread(target=program_run)
                 t2.start()
-            print('Press: {}'.format(store))
-    if (key == Key.right) or (key == Key.pause):
+    if (key == Key.alt_l) or (key == KeyCode(char='`')):
         store.add(key)
         if store == check2:
             main.h_cut_setting()
+    if (key == Key.ctrl_l) or (key == Key.shift_l) or (key == Key.alt_l):
+        store.add(key)
+        if store == check3:
+            sys.exit(1)
 
 def handleKeyRelease(key):
     if key in store:

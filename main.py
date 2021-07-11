@@ -7,7 +7,7 @@ import mouse
 import keyboard
 
 wCam, hCam = 640, 480
-frameR = 90
+frameR = 100
 smoothening = 7
 
 time_list = [0, 0, 0, 0, 0]
@@ -30,15 +30,13 @@ agg_length = 0
 bbox = []
 
 def while_module():
-    print("start check", end=" ")
+    print("program start")
     cv2.namedWindow("Image")
-    global agg_finger, click_z, click_z2, mouse_click_check, plocX, plocY, agg_x, agg_y, clocY, finger_move, bbox
+    global agg_finger, click_z, click_z2, mouse_click_check, plocX, plocY, agg_x, agg_y, clocY, finger_move, bbox, frameR
     success, img = cap.read()
-    print(success)
     if success:
         img = detector.findHands(img)
         lmList, bbox = detector.findPosition(img)
-        print(success)
         if len(lmList) != 0:
             xlist, ylist = [lmList[8][1], lmList[12][1], lmList[16][1], lmList[20][1], lmList[4][1]], [lmList[8][2], lmList[12][2], lmList[16][2], lmList[20][2], lmList[4][2]]
             z1 = lmList[8][3]
@@ -106,7 +104,6 @@ def while_module():
                 cyay = -0.19 if bbox[1] - 20 >= clocY else 0.19 if bbox[3] + 20 <= clocY else (clocY - agg_y)
                 if cyay != 0 and detector.length > 50:
                     try:
-                        #mouse.wheel(clocY/100)
                         time_list[3] = (time.gmtime(time.time()).tm_sec - time_list[2] ) * 1.5
                     except:
                         pass
@@ -115,7 +112,6 @@ def while_module():
                 if cyay == 0:
                     time_list[1] = time.gmtime(time.time()).tm_sec
                 if time_list[3] > 0 and (time.gmtime(time.time()).tm_sec - time_list[1] == 1):
-                    # mouse.wheel(clocY / 100)
                     mouse.wheel((cyay * time_list[3]) / 400)
                     time_list[3] -= 1
                 else:
@@ -143,19 +139,24 @@ def while_module():
             elif fingers == 4:
                 x3 = np.interp(xlist[0], (frameR, wCam - frameR), (0, wScr))
                 clocX = plocX + (x3 - plocX) / smoothening
+                frameR = 0
                 if agg_finger != 4:
                     finger_move = 0
                     time_list[4] = 1
                 elif time_list[4] == 1:
                     if finger_move == 0:
-                        if (clocX - agg_x > 10 and detector.length < 50):
-                            keyboard.press_and_release('ctrl + win + right')
+                        if (clocX - agg_x > 1 and detector.alllength < 150):
+                            keyboard.press('ctrl + win')
+                            keyboard.press_and_release('right')
+                            keyboard.release('ctrl + win')
                             time_list[4] = 0
-                        elif (clocX - agg_x < -10 and detector.length < 50):
-                            keyboard.press_and_release('ctrl + win + left')
+                        elif (clocX - agg_x < -1 and detector.alllength < 150):
+                            keyboard.press('ctrl + win')
+                            keyboard.press_and_release('left')
+                            keyboard.release('ctrl + win')
                             time_list[4] = 0
                         finger_move = 1
-                elif detector.length < 50:
+                elif detector.alllength > 110:
                     time_list[4] = 1
                 for id, i in enumerate(xlist):
                     if id < 4:
@@ -163,6 +164,8 @@ def while_module():
                 plocX, plocY = clocX, clocY
                 agg_finger = fingers
                 agg_x = clocX
+            if fingers != 4:
+                frameR = 100
             click_z, click_z2 = z1, z2
         img = cv2.flip(img, 1)
         cTime = time.time()
