@@ -48,7 +48,6 @@ class handDetector():
             bbox = xmin, ymin, xmax, ymax
 
             if draw:
-                cv2.line(img, (1, h - self.h_cut), (w-1,h - self.h_cut), (255,0,0), 3)
                 cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
 
         return self.lmList, bbox
@@ -75,6 +74,13 @@ class handDetector():
                     self.distense(self.tipIds[1], self.tipIds[2])
                 if id == 3:
                     fingers = 3 if fingers >= 2 else 0
+                    if fingers == 3:
+                        self.alllength = 0
+                        for i in range(1, 3):
+                            self.distense(self.tipIds[i], self.tipIds[i + 1])
+                            self.alllength += self.length
+                        if (self.lmList[self.tipIds[3]][2] > self.lmList[self.tipIds[3] - 1][2]):
+                            fingers = 32
                 if id == 4:
                     fingers = 4 if fingers >= 3 else 0
                     if fingers == 4:
@@ -85,7 +91,11 @@ class handDetector():
         if fingers < 2 and (self.lmList[self.tipIds[1]][2] < self.lmList[self.tipIds[1] - 3][2]):
             if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 1][1]:
                 fingers = 21
-                self.distense(self.tipIds[0], self.tipIds[1])
+                if self.lmList[self.tipIds[1]][2] > self.lmList[self.tipIds[1] - 1][2]:
+                    fingers = 22
+                self.distense(self.tipIds[1], self.tipIds[2])
+                if self.length < 50:
+                    fingers = 23
         elif fingers == 2:
             if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 1][1]:
                 fingers = 31

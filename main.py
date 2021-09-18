@@ -8,9 +8,10 @@ import keyboard
 
 wCam, hCam = 640, 480
 frameR = 100
+frameH = 100
 smoothening = 7
 
-time_list = [0, 0, 0, 0, 0]
+time_list = [0, 0, 0, 0, 0, 0, 0]
 plocX, plocY = 0, 0
 clocX, clocY = 0, 0
 click_z, click_z2 = 0, 0
@@ -29,10 +30,13 @@ finger_move = 1
 agg_length = 0
 bbox = []
 
+def finger_point_print(img, N, xlist, ylist):
+    for i in N:
+        cv2.circle(img, (xlist[i], ylist[i]), 15, (255, 0, 255), cv2.FILLED)
+
 def while_module():
-    print("program start")
     cv2.namedWindow("Image")
-    global agg_finger, click_z, click_z2, mouse_click_check, plocX, plocY, agg_x, agg_y, clocY, finger_move, bbox, frameR
+    global agg_finger, click_z, click_z2, mouse_click_check, plocX, plocY, agg_x, agg_y, clocY, finger_move, bbox, frameR, frameH
     success, img = cap.read()
     if success:
         img = detector.findHands(img)
@@ -43,64 +47,69 @@ def while_module():
             z2 = lmList[12][3]
 
             fingers = detector.fingersUp()
-            cv2.rectangle(img, (frameR, 100), (wCam - frameR, hCam - detector.h_cut),
+            cv2.rectangle(img, (frameR, frameH), (wCam - frameR, hCam - detector.h_cut),
                           (255, 0, 255), 2)
+            cv2.line(img, (1, hCam - detector.h_cut), (wCam - 1, hCam - detector.h_cut), (255, 0, 0), 3)
+            x3 = np.interp(xlist[0], (frameR, wCam - frameR), (0, wScr))
+            y3 = np.interp(ylist[0], (frameH, hCam - detector.h_cut), (0, hScr))
+            clocX = plocX + (x3 - plocX) / smoothening
+            clocY = plocY + (y3 - plocY) / smoothening
             if fingers == 21:
                 if agg_finger == 1:
                     mouse.click("left")
-                    mouse_click_check = 1
-                elif (click_z - z1 > 0.034 and click_z - z1 < 0.2 and mouse_click_check == 0) and (mouse_click_check == 0):
-                    mouse.click("left")
-                    mouse_click_check = 1
-                elif (click_z - z1 < 0.03):
-                    if mouse_click_check == 1:
-                        mouse_click_check = 0
-                cv2.circle(img, (xlist[0], ylist[0]), 15, (255, 0, 255), cv2.FILLED)
-                cv2.circle(img, (xlist[4], ylist[4]), 15, (255, 0, 255), cv2.FILLED)
+                elif time_list[6] == 1 and (agg_x != (wScr-clocX) or agg_y - clocY != 5):
+                    autopy.mouse.move(wScr - clocX, clocY)
+                agg_x, agg_y = (wScr - clocX), clocY
+                plocX, plocY = clocX, clocY
+                finger_point_print(img, [0,4], xlist, ylist)
                 agg_finger = fingers
-                agg_length = detector.length
+
+            elif fingers == 22:
+                if agg_finger == 21:
+                    if time_list[6] == 0:
+                        mouse.press("left")
+                        time_list[6] = 1
+                finger_point_print(img, [0, 4], xlist, ylist)
+                agg_finger = fingers
 
             elif fingers == 31:
                 if detector.length < 50:
                     if agg_finger == 2:
                         mouse.click("right")
-                        mouse_click_check = 1
-                cv2.circle(img, (xlist[0], ylist[0]), 15, (255, 0, 255), cv2.FILLED)
-                cv2.circle(img, (xlist[1], ylist[1]), 15, (255, 0, 255), cv2.FILLED)
-                cv2.circle(img, (xlist[4], ylist[4]), 15, (255, 0, 255), cv2.FILLED)
+                finger_point_print(img, [0, 1, 4], xlist, ylist)
                 agg_finger = fingers
 
             elif fingers == 51:
-                if agg_finger == 4:
+                if agg_finger == 4 and detector.alllength > 130:
                     keyboard.press_and_release('ctrl + shift + z')
                     keyboard.press_and_release('ctrl + y')
                     keyboard.press_and_release('alt + right')
                     mouse_click_check = 1
-                for id, i in enumerate(xlist):
-                    cv2.circle(img, (i, ylist[id]), 15, (255, 0, 255), cv2.FILLED)
+                finger_point_print(img, list(range(len(xlist))), xlist, ylist)
                 agg_finger = fingers
 
             elif fingers == 1:
-                x3 = np.interp(xlist[0], (frameR, wCam - frameR), (0, wScr))
-                y3 = np.interp(ylist[0], (100, hCam - detector.h_cut), (0, hScr))
-                clocX = plocX + (x3 - plocX) / smoothening
-                clocY = plocY + (y3 - plocY) / smoothening
-
+                if agg_finger == 21:
+                    if time_list[6] == 1:
+                        mouse.release("left")
+                        time_list[6] = 0
                 if agg_x != (wScr-clocX) and agg_y != clocY:
-                    try:
-                        autopy.mouse.move(wScr - clocX, clocY)
-                    except:
-                        pass
+                    autopy.mouse.move(wScr - clocX, clocY)
                 agg_x, agg_y = (wScr - clocX), clocY
                 cv2.circle(img, (xlist[0], ylist[0]), 15, (255, 0, 255), cv2.FILLED)
                 plocX, plocY = clocX, clocY
                 agg_finger = fingers
 
+            elif fingers == 23:
+                if agg_x != (wScr-clocX) and agg_y != clocY:
+                    mouse.drag(agg_x, agg_y, (wScr - clocX), clocY)
+                agg_x, agg_y = (wScr - clocX), clocY
+                cv2.circle(img, (xlist[0], ylist[0]), 15, (255, 0, 255), cv2.FILLED)
+                plocX, plocY = clocX, clocY
+                agg_finger = fingers
+
+
             elif fingers == 2:
-                x3 = np.interp(xlist[0], (frameR, wCam - frameR), (0, wScr))
-                y3 = np.interp(ylist[0], (frameR, hCam - frameR), (0, hScr))
-                clocX = plocX + (x3 - plocX) / smoothening
-                clocY = plocY + (y3 - plocY) / smoothening
                 cyay = -0.19 if bbox[1] - 20 >= clocY else 0.19 if bbox[3] + 20 <= clocY else (clocY - agg_y)
                 if cyay != 0 and detector.length > 50:
                     try:
@@ -116,60 +125,69 @@ def while_module():
                     time_list[3] -= 1
                 else:
                     time_list[1] = time.gmtime(time.time()).tm_sec
-                for id, i in enumerate(xlist):
-                    if id < 2:
-                        cv2.circle(img, (i, ylist[id]), 15, (255, 0, 255), cv2.FILLED)
+                finger_point_print(img, [0, 1], xlist, ylist)
                 plocX, plocY = clocX, clocY
                 agg_finger = fingers
                 agg_y = clocY
 
             elif fingers == 3:
-                if (click_z - z1 > 0.03 and click_z - z1 < 0.2 and mouse_click_check == 0) and (mouse_click_check == 0):
+                if (mouse_click_check == 0) and (detector.alllength < 80):
                     keyboard.press_and_release('ctrl + z')
                     keyboard.press_and_release('alt + left')
                     mouse_click_check = 1
-                elif (click_z - z1 < 0.03):
-                    if mouse_click_check == 1:
-                        mouse_click_check = 0
-                cv2.circle(img, (xlist[0], ylist[0]), 15, (255, 0, 255), cv2.FILLED)
-                cv2.circle(img, (xlist[1], ylist[1]), 15, (255, 0, 255), cv2.FILLED)
-                cv2.circle(img, (xlist[2], ylist[2]), 15, (255, 0, 255), cv2.FILLED)
+                else:
+                    mouse_click_check = 0
+                if (time_list[5] == 1) and (agg_y - clocY > 3) and (detector.alllength > 80):
+                    keyboard.press('win')
+                    keyboard.press_and_release('tab')
+                    keyboard.release('win')
+                    time_list[5] = 0
+                finger_point_print(img, [0, 1, 2], xlist, ylist)
                 agg_finger = fingers
+                agg_y = clocY
+
+            elif fingers == 32:
+                finger_point_print(img, [0, 1, 2], xlist, ylist)
+                agg_finger = fingers
+                agg_y = clocY
+                time_list[5] = 1
 
             elif fingers == 4:
-                x3 = np.interp(xlist[0], (frameR, wCam - frameR), (0, wScr))
-                clocX = plocX + (x3 - plocX) / smoothening
                 frameR = 0
+                frameH = 0
                 if agg_finger != 4:
                     finger_move = 0
                     time_list[4] = 1
                 elif time_list[4] == 1:
                     if finger_move == 0:
-                        if (clocX - agg_x > 1 and detector.alllength < 150):
+                        if (clocX - agg_x > 1 and detector.alllength < 130):
                             keyboard.press('ctrl + win')
                             keyboard.press_and_release('right')
                             keyboard.release('ctrl + win')
                             time_list[4] = 0
-                        elif (clocX - agg_x < -1 and detector.alllength < 150):
+                        elif (clocX - agg_x < -1 and detector.alllength < 130):
                             keyboard.press('ctrl + win')
                             keyboard.press_and_release('left')
                             keyboard.release('ctrl + win')
                             time_list[4] = 0
                         finger_move = 1
-                elif detector.alllength > 110:
+                elif detector.alllength > 130:
                     time_list[4] = 1
-                for id, i in enumerate(xlist):
-                    if id < 4:
-                        cv2.circle(img, (i, ylist[id]), 15, (255, 0, 255), cv2.FILLED)
+                finger_point_print(img, list(range(len(xlist)-1)), xlist, ylist)
                 plocX, plocY = clocX, clocY
                 agg_finger = fingers
                 agg_x = clocX
             if fingers != 4:
                 frameR = 100
+                frameH = 100
+            if (agg_finger == 21 or agg_finger == 22) and fingers != agg_finger:
+                mouse.release("left")
+            if (agg_finger == 21) and fingers != agg_finger:
+                time_list[6] = 0
             click_z, click_z2 = z1, z2
         img = cv2.flip(img, 1)
         cTime = time.time()
-        fps = 1 / (cTime - time_list[0] )
+        fps = 1 / (cTime - time_list[0]) if (cTime - time_list[0]) != 0 else 1
         time_list[0] = cTime
         cv2.putText(img, str(int(fps)), (20, 50), cv2.FONT_HERSHEY_PLAIN, 3,
                     (255, 0, 0), 3)
@@ -182,4 +200,5 @@ def h_cut_setting():
 
 def opencv_all_delete():
     print("delete")
-    cv2.destroyAllWindows()
+    if cv2.waitKey(1) :
+        cv2.destroyAllWindows()

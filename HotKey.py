@@ -13,13 +13,15 @@ agg_time = 0
 
 def program_run():
     global agg_time, loop_check
-    while loop_check == 1:
+    while True:
         img = main.while_module()
+        cv2.namedWindow('Image')
         cv2.imshow("Image", img)
         if cv2.waitKey(1) == 27:
             pass
-    if loop_check == 0:
-        main.opencv_all_delete()
+        if loop_check == 0:
+            main.opencv_all_delete()
+            break
 
 print("start")
 def handleKeyPress(key):
@@ -41,6 +43,8 @@ def handleKeyPress(key):
     if (key == Key.ctrl_l) or (key == Key.shift_l) or (key == Key.alt_l):
         store.add(key)
         if store == check3:
+            loop_check = 0
+            program_run()
             sys.exit(1)
 
 def handleKeyRelease(key):
